@@ -1,0 +1,61 @@
+install.packages("plotly")
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+df <- read_csv("usa_housing.csv")
+View(df)
+
+colnames(df)
+
+#Grouping houses on different categories based on the "Lotsize"
+df$LotSizeCategory <- cut(df$LotSize, 
+                            breaks = c(0, 1.5, 2, Inf), 
+                            labels = c("Small", "Medium", "Large"))
+
+# Check the new categories
+table(df$LotSizeCategory)
+View(df)
+
+#Descriptive Statistics
+summary(df)
+
+# Compute additional descriptive statistics
+mean_price <- mean(df$Price, na.rm = TRUE)
+median_price <- median(df$Price, na.rm = TRUE)
+sd_price <- sd(df$Price, na.rm = TRUE)
+correlation_matrix <- cor(df %>% select(Price, Bedrooms, Bathrooms, SquareFeet, YearBuilt, GarageSpaces, LotSize, CrimeRate, SchoolRating), use = "complete.obs")
+
+# Display results
+mean_price
+median_price
+sd_price
+correlation_matrix
+
+#Data Visualization
+# Histogram of Prices
+ggplot(df, aes(x = Price)) +
+  geom_histogram(binwidth = 100000, fill = "skyblue", color = "black") +
+  labs(title = "Distribution of House Prices", x = "Price", y = "Frequency")
+
+# Scatter plot of Price vs. SquareFeet
+ggplot(df, aes(x = SquareFeet, y = Price)) +
+  geom_point(color = "blue", alpha = 0.5) +
+  labs(title = "Price vs. Square Feet", x = "Square Feet", y = "Price")
+
+# Box plot of Price by Number of Bedrooms
+ggplot(df, aes(x = factor(Bedrooms), y = Price)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Price by Number of Bedrooms", x = "Bedrooms", y = "Price")
+
+# Heatmap of correlation matrix
+library(corrplot)
+corrplot(correlation_matrix, method = "color", type = "upper", 
+         tl.col = "black", tl.srt = 45, title = "Correlation Heatmap")
+
+# Bar chart of Price by Lot Size Category
+ggplot(df, aes(x = LotSizeCategory, y = Price, fill = LotSizeCategory)) +
+  geom_bar(stat = "summary", fun = "mean", show.legend = FALSE) +
+  labs(title = "Average Price by Lot Size Category", x = "Lot Size Category", y = "Average Price")
+
